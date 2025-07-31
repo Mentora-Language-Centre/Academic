@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Siswa - Mentora Finance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #6366f1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #4f46e5;
+      }
+      #main-app {
+        display: none;
+      }
+      .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Modal Verifikasi Akses -->
+    <div
+      id="access-modal"
+      class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center p-4"
+    >
+      <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8">
+        <div class="text-center mb-6">
+          <div
+            class="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4"
+          >
+            <svg
+              class="w-8 h-8 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              ></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">Portal Siswa</h2>
+          <p class="text-center text-gray-500">
+            Masukkan nomor telepon Anda untuk masuk
+          </p>
+        </div>
+        <form id="access-form">
+          <div class="mb-4">
+            <label
+              for="phone-input"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Nomor Telepon
+            </label>
+            <input
+              type="tel"
+              id="phone-input"
+              class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="628123456789"
+              required
+            />
+          </div>
+          <p
+            id="access-error"
+            class="text-red-500 text-sm text-center mb-4 h-5"
+          ></p>
+          <button
+            type="submit"
+            class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition duration-300"
+          >
+            Masuk
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div
+      id="loading-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
+      style="display: none"
+    >
+      <div class="text-center">
+        <div
+          class="w-16 h-16 border-4 border-white border-t-transparent border-solid rounded-full animate-spin mx-auto"
+        ></div>
+        <p class="mt-4 text-white text-xl">Memuat data...</p>
+      </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app">
+      <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+        <!-- Header -->
+        <header class="bg-white shadow-lg">
+          <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div
+                  class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center"
+                >
+                  <span
+                    class="text-white font-bold text-lg"
+                    id="student-initial"
+                    >S</span
+                  >
+                </div>
+                <div>
+                  <h1
+                    class="text-2xl font-bold text-gray-800"
+                    id="student-name"
+                  >
+                    Nama Siswa
+                  </h1>
+                  <p class="text-gray-600" id="student-info">
+                    Tingkat - Jenis Kelas
+                  </p>
+                </div>
+              </div>
+              <button
+                onclick="logout()"
+                class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300"
+              >
+                Keluar
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+          <!-- Navigation Tabs -->
+          <nav class="flex space-x-2 mb-8">
+            <button
+              data-tab="dashboard"
+              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-indigo-600 border-b-4 border-indigo-600 rounded-t-lg shadow-sm active"
+            >
+              📊 Dashboard
+            </button>
+            <button
+              data-tab="schedule"
+              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
+            >
+              📅 Jadwal
+            </button>
+            <button
+              data-tab="payments"
+              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
+            >
+              💰 Pembayaran
+            </button>
+            <button
+              data-tab="profile"
+              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
+            >
+              👤 Profil
+            </button>
+          </nav>
+
+          <!-- Dashboard Tab -->
+          <div id="dashboard" class="tab-content active">
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+            >
+              <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                      Sisa Pertemuan
+                    </h3>
+                    <div
+                      class="text-3xl font-bold text-indigo-600 mt-2"
+                      id="meetings-left"
+                    >
+                      0
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-6 h-6 text-indigo-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                      Total Pertemuan
+                    </h3>
+                    <div
+                      class="text-3xl font-bold text-green-600 mt-2"
+                      id="total-meetings"
+                    >
+                      0
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-6 h-6 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                      Progress
+                    </h3>
+                    <div
+                      class="text-3xl font-bold text-purple-600 mt-2"
+                      id="progress-percentage"
+                    >
+                      0%
+                    </div>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-6 h-6 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Catat Kehadiran Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">
+                📝 Catat Kehadiran
+              </h3>
+              <div class="text-center" id="attendance-section">
+                <div class="mb-4">
+                  <p class="text-gray-600">
+                    Hari ini:
+                    <span class="font-semibold" id="today-date"></span>
+                  </p>
+                </div>
+                <div id="attendance-available" style="display: none">
+                  <div
+                    class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4"
+                  >
+                    <p class="text-green-800 font-semibold">
+                      ✅ Anda memiliki jadwal belajar hari ini!
+                    </p>
+                    <p class="text-green-600 text-sm mt-1">
+                      Pertemuan ke-<span id="current-meeting-number">1</span>
+                    </p>
+                  </div>
+                  <button
+                    onclick="markAttendance()"
+                    class="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition duration-300"
+                  >
+                    Catat Hadir Sekarang
+                  </button>
+                </div>
+                <div id="attendance-not-available">
+                  <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p class="text-gray-600">
+                      📅 Tidak ada jadwal belajar hari ini
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">
+                ℹ️ Informasi Singkat
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="border-l-4 border-indigo-500 pl-4">
+                  <h4 class="font-semibold text-gray-800">Jadwal Belajar</h4>
+                  <p class="text-gray-600" id="schedule-info">-</p>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                  <h4 class="font-semibold text-gray-800">Status</h4>
+                  <p class="text-gray-600" id="status-info">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule Tab -->
+          <div id="schedule" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-6">
+                📅 Jadwal Mingguan Anda
+              </h3>
+              <div
+                class="grid grid-cols-1 md:grid-cols-7 gap-4"
+                id="weekly-schedule"
+              >
+                <!-- Schedule will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Payments Tab -->
+          <div id="payments" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-6">
+                💰 Riwayat Pembayaran
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Tanggal
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Jumlah
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Pertemuan
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="payments-table"
+                    class="bg-white divide-y divide-gray-200"
+                  >
+                    <!-- Payments will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Tab -->
+          <div id="profile" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-6">
+                👤 Profil Saya
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Nama Lengkap</label
+                    >
+                    <p class="mt-1 text-lg text-gray-900" id="profile-name">
+                      -
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Nomor Telepon</label
+                    >
+                    <p class="mt-1 text-lg text-gray-900" id="profile-phone">
+                      -
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Email</label
+                    >
+                    <p class="mt-1 text-lg text-gray-900" id="profile-email">
+                      -
+                    </p>
+                  </div>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Asal Sekolah</label
+                    >
+                    <p class="mt-1 text-lg text-gray-900" id="profile-school">
+                      -
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Tingkatan</label
+                    >
+                    <p class="mt-1 text-lg text-gray-900" id="profile-level">
+                      -
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700"
+                      >Jenis Kelas</label
+                    >
+                    <p
+                      class="mt-1 text-lg text-gray-900"
+                      id="profile-class-type"
+                    >
+                      -
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- KONFIGURASI ---
+      const SPREADSHEET_WEB_APP_URL =
+        "https://script.google.com/a/macros/mentora.id/s/AKfycbxtZ8xicc0BA4fPFdsJtKGVndHK7pMahCfg9XaCO-quWMn44Q2k0CjraG_1gTzsN1OYhQ/exec";
+
+      // --- State Aplikasi ---
+      let currentStudent = null;
+      let studentPayments = [];
+      const dayNames = [
+        "Minggu",
+        "Senin",
+        "Selasa",
+        "Rabu",
+        "Kamis",
+        "Jumat",
+        "Sabtu",
+      ];
+
+      // --- Event Listeners ---
+      document.addEventListener("DOMContentLoaded", () => {
+        document
+          .getElementById("access-form")
+          .addEventListener("submit", handleLogin);
+
+        // Setup tab navigation
+        document.querySelectorAll(".nav-tab").forEach((tab) => {
+          tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+        });
+
+        // Set today's date
+        const today = new Date();
+        document.getElementById("today-date").textContent =
+          today.toLocaleDateString("id-ID", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+      });
+
+      // --- Fungsi Login ---
+      async function handleLogin(e) {
+        e.preventDefault();
+        const phoneInput = document.getElementById("phone-input").value.trim();
+        const errorP = document.getElementById("access-error");
+        const loginButton = e.target.querySelector("button[type='submit']"); // 1. Dapatkan tombol
+        const originalButtonHTML = loginButton.innerHTML; // 2. Simpan konten asli tombol
+
+        errorP.textContent = "";
+
+        if (!phoneInput) {
+          errorP.textContent = "Nomor telepon tidak boleh kosong.";
+          return;
+        }
+
+        // --- 3. Tambahkan animasi dan nonaktifkan tombol ---
+        loginButton.disabled = true;
+        loginButton.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Memproses...</span>
+        `;
+        // Overlay loading yang sudah ada tetap ditampilkan
+        document.getElementById("loading-overlay").style.display = "flex";
+
+        try {
+          // Solusi untuk error sebelumnya
+          const response = await fetch(
+            `${SPREADSHEET_WEB_APP_URL}?action=getAllData`
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const students = data.students || [];
+          const payments = data.payments || [];
+
+          const normalizedPhone = phoneInput.replace(/[\s\-\(\)]/g, "");
+          const student = students.find((s) => {
+            // Pastikan s.phone ada dan konversi ke string sebelum .replace()
+            if (!s.phone) return false;
+            const studentPhone = String(s.phone).replace(/[\s\-\(\)]/g, "");
+            return studentPhone === normalizedPhone;
+          });
+
+          if (!student) {
+            errorP.textContent = "Nomor telepon tidak ditemukan dalam sistem.";
+            throw new Error("Student not found"); // Hentikan proses jika siswa tidak ditemukan
+          }
+
+          if (student.activeBatch && typeof student.activeBatch === "string") {
+            try {
+              student.activeBatch = JSON.parse(student.activeBatch);
+            } catch (err) {
+              student.activeBatch = null;
+            }
+          }
+
+          studentPayments = payments.filter((p) => p.studentId == student.id);
+          currentStudent = student;
+
+          document.getElementById("access-modal").style.display = "none";
+          document.getElementById("main-app").style.display = "block";
+
+          loadStudentData();
+        } catch (error) {
+          console.error("Login error:", error);
+          if (error.message !== "Student not found") {
+            errorP.textContent =
+              "Terjadi kesalahan saat memuat data. Coba lagi.";
+          }
+        } finally {
+          // --- 4. Kembalikan tombol ke keadaan semula ---
+          loginButton.disabled = false;
+          loginButton.innerHTML = originalButtonHTML;
+          document.getElementById("loading-overlay").style.display = "none";
+        }
+      }
+
+      // --- Fungsi Load Data ---
+      function loadStudentData() {
+        if (!currentStudent) return;
+
+        // Update header
+        document.getElementById("student-initial").textContent =
+          currentStudent.name.charAt(0).toUpperCase();
+        document.getElementById("student-name").textContent =
+          currentStudent.name;
+        document.getElementById(
+          "student-info"
+        ).textContent = `${currentStudent.level} - ${currentStudent.classType}`;
+
+        // Update dashboard
+        updateDashboard();
+
+        // Update profile
+        updateProfile();
+
+        // Update schedule
+        updateSchedule();
+
+        // Update payments
+        updatePayments();
+
+        // Update attendance section
+        updateAttendanceSection();
+      }
+
+      function updateDashboard() {
+        const batch = currentStudent.activeBatch;
+
+        if (batch) {
+          const meetingsLeft = batch.meetingsLeft || 0;
+          const totalMeetings = batch.totalMeetings || 0;
+          const progress =
+            totalMeetings > 0
+              ? Math.round(
+                  ((totalMeetings - meetingsLeft) / totalMeetings) * 100
+                )
+              : 0;
+
+          document.getElementById("meetings-left").textContent = meetingsLeft;
+          document.getElementById("total-meetings").textContent = totalMeetings;
+          document.getElementById("progress-percentage").textContent =
+            progress + "%";
+
+          // Schedule info
+          if (batch.studyDays && batch.studyDays.length > 0) {
+            const scheduleNames = batch.studyDays.map(
+              (dayNum) => dayNames[dayNum]
+            );
+            document.getElementById("schedule-info").textContent =
+              scheduleNames.join(" & ");
+          }
+
+          // Status info
+          const status = meetingsLeft > 0 ? "Aktif" : "Selesai";
+          document.getElementById("status-info").textContent = status;
+          document.getElementById("status-info").className =
+            meetingsLeft > 0
+              ? "text-green-600 font-semibold"
+              : "text-red-600 font-semibold";
+        } else {
+          document.getElementById("meetings-left").textContent = "0";
+          document.getElementById("total-meetings").textContent = "0";
+          document.getElementById("progress-percentage").textContent = "0%";
+          document.getElementById("schedule-info").textContent =
+            "Belum ada jadwal";
+          document.getElementById("status-info").textContent = "Tidak Aktif";
+          document.getElementById("status-info").className = "text-gray-600";
+        }
+      }
+
+      function updateProfile() {
+        document.getElementById("profile-name").textContent =
+          currentStudent.name;
+        document.getElementById("profile-phone").textContent =
+          currentStudent.phone || "-";
+        document.getElementById("profile-email").textContent =
+          currentStudent.email || "-";
+        document.getElementById("profile-school").textContent =
+          currentStudent.school || "-";
+        document.getElementById("profile-level").textContent =
+          currentStudent.level;
+        document.getElementById("profile-class-type").textContent =
+          currentStudent.classType;
+      }
+
+      function updateSchedule() {
+        const scheduleContainer = document.getElementById("weekly-schedule");
+        scheduleContainer.innerHTML = "";
+
+        const today = new Date().getDay();
+        const batch = currentStudent.activeBatch;
+
+        dayNames.forEach((dayName, index) => {
+          const hasClass =
+            batch && batch.studyDays && batch.studyDays.includes(index);
+          const isToday = index === today;
+
+          const dayCard = document.createElement("div");
+          dayCard.className = `p-4 rounded-lg border-2 text-center ${
+            hasClass
+              ? isToday
+                ? "bg-indigo-100 border-indigo-500 text-indigo-800"
+                : "bg-green-50 border-green-200 text-green-800"
+              : "bg-gray-50 border-gray-200 text-gray-500"
+          }`;
+
+          dayCard.innerHTML = `
+            <div class="font-semibold mb-2">${dayName}</div>
+            <div class="text-sm">
+              ${hasClass ? "📚 Ada Kelas" : "🚫 Libur"}
+              ${
+                isToday
+                  ? "<br><span class='font-bold text-xs'>HARI INI</span>"
+                  : ""
+              }
+            </div>
+          `;
+
+          scheduleContainer.appendChild(dayCard);
+        });
+      }
+
+      function updatePayments() {
+        const tbody = document.getElementById("payments-table");
+        tbody.innerHTML = "";
+
+        if (studentPayments.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                Belum ada riwayat pembayaran
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        // Sort payments by date (newest first)
+        const sortedPayments = [...studentPayments].sort(
+          (a, b) => new Date(b.startDate) - new Date(a.startDate)
+        );
+
+        sortedPayments.forEach((payment) => {
+          const paymentDate = new Date(payment.startDate).toLocaleDateString(
+            "id-ID"
+          );
+          const amount = new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+          }).format(payment.amount);
+
+          const isActive = payment.meetingsLeft > 0;
+          const statusText = isActive ? "Aktif" : "Selesai";
+          const statusClass = isActive
+            ? "text-green-600 bg-green-100"
+            : "text-gray-600 bg-gray-100";
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paymentDate}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${amount}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.totalMeetings} pertemuan</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
+                ${statusText}
+              </span>
+            </td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      }
+
+      function updateAttendanceSection() {
+        const today = new Date().getDay();
+        const batch = currentStudent.activeBatch;
+
+        const availableSection = document.getElementById(
+          "attendance-available"
+        );
+        const notAvailableSection = document.getElementById(
+          "attendance-not-available"
+        );
+
+        if (
+          batch &&
+          batch.studyDays &&
+          batch.studyDays.includes(today) &&
+          batch.meetingsLeft > 0
+        ) {
+          // Ada jadwal hari ini
+          const totalMeetings = batch.totalMeetings || 0;
+          const meetingsLeft = batch.meetingsLeft || 0;
+          const currentMeeting = totalMeetings - meetingsLeft + 1;
+
+          document.getElementById("current-meeting-number").textContent =
+            currentMeeting;
+
+          availableSection.style.display = "block";
+          notAvailableSection.style.display = "none";
+        } else {
+          // Tidak ada jadwal hari ini
+          availableSection.style.display = "none";
+          notAvailableSection.style.display = "block";
+        }
+      }
+
+      // --- Fungsi Attendance ---
+      async function markAttendance() {
+        if (
+          !currentStudent ||
+          !currentStudent.activeBatch ||
+          currentStudent.activeBatch.meetingsLeft <= 0
+        ) {
+          alert("Tidak dapat mencatat kehadiran. Silakan hubungi admin.");
+          return;
+        }
+
+        const confirmAttendance = confirm(
+          "Apakah Anda yakin ingin mencatat kehadiran hari ini?"
+        );
+        if (!confirmAttendance) return;
+
+        document.getElementById("loading-overlay").style.display = "flex";
+
+        try {
+          // Update meetings left
+          currentStudent.activeBatch.meetingsLeft--;
+
+          // Prepare data for update
+          const updateData = {
+            id: currentStudent.id,
+            activeBatch: currentStudent.activeBatch,
+          };
+
+          const response = await fetch(
+            `${SPREADSHEET_WEB_APP_URL}?action=updateStudent`,
+            {
+              method: "POST",
+              mode: "cors",
+              headers: { "Content-Type": "text/plain" },
+              body: JSON.stringify(updateData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.status !== "success") {
+            throw new Error(result.message || "Unknown error from Apps Script");
+          }
+
+          // Update UI
+          loadStudentData();
+
+          const meetingsLeft = currentStudent.activeBatch.meetingsLeft;
+          if (meetingsLeft === 0) {
+            alert(
+              "🎉 Selamat! Anda telah menyelesaikan semua pertemuan. Terima kasih telah belajar dengan kami!"
+            );
+          } else {
+            alert(
+              `✅ Kehadiran berhasil dicatat! Sisa pertemuan: ${meetingsLeft}`
+            );
+          }
+        } catch (error) {
+          console.error("Error marking attendance:", error);
+          // Rollback the change
+          currentStudent.activeBatch.meetingsLeft++;
+          alert(
+            "Gagal mencatat kehadiran. Silakan coba lagi atau hubungi admin."
+          );
+        } finally {
+          document.getElementById("loading-overlay").style.display = "none";
+        }
+      }
+
+      // --- Fungsi Navigation ---
+      function switchTab(tabName) {
+        // Update tab content visibility
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active");
+
+        // Update tab button styles
+        document.querySelectorAll(".nav-tab").forEach((t) => {
+          const isActive = t.dataset.tab === tabName;
+          t.classList.toggle("text-indigo-600", isActive);
+          t.classList.toggle("border-indigo-600", isActive);
+          t.classList.toggle("text-gray-600", !isActive);
+          t.classList.toggle("border-transparent", !isActive);
+        });
+      }
+
+      // --- Fungsi Logout ---
+      function logout() {
+        const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+        if (confirmLogout) {
+          // Clear data
+          currentStudent = null;
+          studentPayments = [];
+
+          // Reset form
+          document.getElementById("phone-input").value = "";
+          document.getElementById("access-error").textContent = "";
+
+          // Show login modal and hide main app
+          document.getElementById("main-app").style.display = "none";
+          document.getElementById("access-modal").style.display = "flex";
+
+          // Reset to dashboard tab
+          switchTab("dashboard");
+        }
+      }
+
+      // --- Utility Functions ---
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString("id-ID", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+
+      // --- Error Handling ---
+      window.addEventListener("error", function (e) {
+        console.error("Global error:", e.error);
+        alert("Terjadi kesalahan aplikasi. Silakan refresh halaman.");
+      });
+
+      // --- Prevent back button after login ---
+      window.addEventListener("popstate", function (event) {
+        if (currentStudent) {
+          // If logged in, prevent going back to login
+          history.pushState(null, null, location.href);
+        }
+      });
+
+      // Push initial state when logged in
+      function preventBackToLogin() {
+        history.pushState(null, null, location.href);
+        window.addEventListener("popstate", function (event) {
+          history.pushState(null, null, location.href);
+        });
+      }
+
+      // Call this after successful login
+      // preventBackToLogin(); // Uncomment if you want to prevent back button
+    </script>
+  </body>
+</html>
