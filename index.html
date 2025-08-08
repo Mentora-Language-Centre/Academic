@@ -972,5 +972,14 @@
       // Call this after successful login
       // preventBackToLogin(); // Uncomment if you want to prevent back button
     </script>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/service-worker.js")
+          .then(reg => console.log("Service Worker registered:", reg.scope))
+          .catch(err => console.error("Service Worker failed:", err));
+      }
+    </script>
+
   </body>
 </html>
