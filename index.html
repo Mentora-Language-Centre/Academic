@@ -47,9 +47,53 @@
           opacity: 0.5;
         }
       }
+
+      /* Mobile responsive tab styles */
+      .nav-tabs-container {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .nav-tabs-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Mobile tab button styles */
+      @media (max-width: 768px) {
+        .nav-tab {
+          min-width: 120px;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .nav-tab-text {
+          font-size: 0.875rem;
+        }
+      }
+
+      /* Additional mobile optimizations */
+      @media (max-width: 640px) {
+        .container {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
+        .header-content {
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .header-info {
+          order: -1;
+        }
+
+        .logout-btn {
+          align-self: center;
+        }
+      }
     </style>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#ebaa1e">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#ebaa1e" />
   </head>
   <body class="bg-gray-100">
     <!-- Modal Verifikasi Akses -->
@@ -165,57 +209,63 @@
         </header>
 
         <div class="container mx-auto px-4 py-8 max-w-6xl">
-          <!-- Navigation Tabs -->
-          <nav class="flex space-x-2 mb-8">
-            <button
-              data-tab="dashboard"
-              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-indigo-600 border-b-4 border-indigo-600 rounded-t-lg shadow-sm active"
-            >
-              📊 Dashboard
-            </button>
-            <button
-              data-tab="schedule"
-              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
-            >
-              📅 Jadwal
-            </button>
-            <button
-              data-tab="payments"
-              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
-            >
-              💰 Pembayaran
-            </button>
-            <button
-              data-tab="profile"
-              class="nav-tab flex-1 py-3 px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
-            >
-              👤 Profil
-            </button>
+          <!-- Navigation Tabs - Mobile Responsive -->
+          <nav class="mb-8">
+            <div class="nav-tabs-container">
+              <div class="flex space-x-1 sm:space-x-2 min-w-max">
+                <button
+                  data-tab="dashboard"
+                  class="nav-tab flex-1 sm:flex-none py-2 sm:py-3 px-3 sm:px-4 text-center font-semibold bg-white text-indigo-600 border-b-4 border-indigo-600 rounded-t-lg shadow-sm active"
+                >
+                  <span class="nav-tab-text">📊 Dashboard</span>
+                </button>
+                <button
+                  data-tab="schedule"
+                  class="nav-tab flex-1 sm:flex-none py-2 sm:py-3 px-3 sm:px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
+                >
+                  <span class="nav-tab-text">📅 Jadwal</span>
+                </button>
+                <button
+                  data-tab="payments"
+                  class="nav-tab flex-1 sm:flex-none py-2 sm:py-3 px-3 sm:px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
+                >
+                  <span class="nav-tab-text">💰 Pembayaran</span>
+                </button>
+                <button
+                  data-tab="profile"
+                  class="nav-tab flex-1 sm:flex-none py-2 sm:py-3 px-3 sm:px-4 text-center font-semibold bg-white text-gray-600 border-b-4 border-transparent rounded-t-lg shadow-sm hover:text-indigo-600"
+                >
+                  <span class="nav-tab-text">👤 Profil</span>
+                </button>
+              </div>
+            </div>
           </nav>
 
           <!-- Dashboard Tab -->
           <div id="dashboard" class="tab-content active">
             <div
-              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
             >
-              <div class="bg-white p-6 rounded-xl shadow-lg">
+              <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
                 <div class="flex items-center justify-between">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-800">
+                    <h3
+                      class="text-base sm:text-lg font-semibold text-gray-800"
+                    >
                       Sisa Pertemuan
                     </h3>
                     <div
-                      class="text-3xl font-bold text-indigo-600 mt-2"
+                      class="text-2xl sm:text-3xl font-bold text-indigo-600 mt-2"
                       id="meetings-left"
                     >
                       0
                     </div>
                   </div>
                   <div
-                    class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center"
+                    class="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-full flex items-center justify-center"
                   >
                     <svg
-                      class="w-6 h-6 text-indigo-600"
+                      class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -231,24 +281,26 @@
                 </div>
               </div>
 
-              <div class="bg-white p-6 rounded-xl shadow-lg">
+              <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
                 <div class="flex items-center justify-between">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-800">
+                    <h3
+                      class="text-base sm:text-lg font-semibold text-gray-800"
+                    >
                       Total Pertemuan
                     </h3>
                     <div
-                      class="text-3xl font-bold text-green-600 mt-2"
+                      class="text-2xl sm:text-3xl font-bold text-green-600 mt-2"
                       id="total-meetings"
                     >
                       0
                     </div>
                   </div>
                   <div
-                    class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center"
+                    class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center"
                   >
                     <svg
-                      class="w-6 h-6 text-green-600"
+                      class="w-5 h-5 sm:w-6 sm:h-6 text-green-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -264,24 +316,28 @@
                 </div>
               </div>
 
-              <div class="bg-white p-6 rounded-xl shadow-lg">
+              <div
+                class="bg-white p-4 sm:p-6 rounded-xl shadow-lg sm:col-span-2 lg:col-span-1"
+              >
                 <div class="flex items-center justify-between">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-800">
+                    <h3
+                      class="text-base sm:text-lg font-semibold text-gray-800"
+                    >
                       Progress
                     </h3>
                     <div
-                      class="text-3xl font-bold text-purple-600 mt-2"
+                      class="text-2xl sm:text-3xl font-bold text-purple-600 mt-2"
                       id="progress-percentage"
                     >
                       0%
                     </div>
                   </div>
                   <div
-                    class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center"
+                    class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center"
                   >
                     <svg
-                      class="w-6 h-6 text-purple-600"
+                      class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -299,13 +355,13 @@
             </div>
 
             <!-- Catat Kehadiran Section -->
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-              <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+              <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-4">
                 📝 Catat Kehadiran
               </h3>
               <div class="text-center" id="attendance-section">
                 <div class="mb-4">
-                  <p class="text-gray-600">
+                  <p class="text-sm sm:text-base text-gray-600">
                     Hari ini:
                     <span class="font-semibold" id="today-date"></span>
                   </p>
@@ -314,23 +370,25 @@
                   <div
                     class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4"
                   >
-                    <p class="text-green-800 font-semibold">
+                    <p
+                      class="text-green-800 font-semibold text-sm sm:text-base"
+                    >
                       ✅ Anda memiliki jadwal belajar hari ini!
                     </p>
-                    <p class="text-green-600 text-sm mt-1">
+                    <p class="text-green-600 text-xs sm:text-sm mt-1">
                       Pertemuan ke-<span id="current-meeting-number">1</span>
                     </p>
                   </div>
                   <button
                     onclick="markAttendance()"
-                    class="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition duration-300"
+                    class="bg-green-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg hover:bg-green-700 transition duration-300 text-sm sm:text-base"
                   >
                     Catat Hadir Sekarang
                   </button>
                 </div>
                 <div id="attendance-not-available">
                   <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <p class="text-gray-600">
+                    <p class="text-gray-600 text-sm sm:text-base">
                       📅 Tidak ada jadwal belajar hari ini
                     </p>
                   </div>
@@ -339,18 +397,32 @@
             </div>
 
             <!-- Quick Info -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-              <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+              <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-4">
                 ℹ️ Informasi Singkat
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="border-l-4 border-indigo-500 pl-4">
-                  <h4 class="font-semibold text-gray-800">Jadwal Belajar</h4>
-                  <p class="text-gray-600" id="schedule-info">-</p>
+                  <h4 class="font-semibold text-gray-800 text-sm sm:text-base">
+                    Jadwal Belajar
+                  </h4>
+                  <p
+                    class="text-gray-600 text-sm sm:text-base"
+                    id="schedule-info"
+                  >
+                    -
+                  </p>
                 </div>
                 <div class="border-l-4 border-green-500 pl-4">
-                  <h4 class="font-semibold text-gray-800">Status</h4>
-                  <p class="text-gray-600" id="status-info">-</p>
+                  <h4 class="font-semibold text-gray-800 text-sm sm:text-base">
+                    Status
+                  </h4>
+                  <p
+                    class="text-gray-600 text-sm sm:text-base"
+                    id="status-info"
+                  >
+                    -
+                  </p>
                 </div>
               </div>
             </div>
@@ -358,12 +430,12 @@
 
           <!-- Schedule Tab -->
           <div id="schedule" class="tab-content">
-            <div class="bg-white rounded-xl shadow-lg p-6">
-              <h3 class="text-xl font-bold text-gray-800 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+              <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-6">
                 📅 Jadwal Mingguan Anda
               </h3>
               <div
-                class="grid grid-cols-1 md:grid-cols-7 gap-4"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 sm:gap-4"
                 id="weekly-schedule"
               >
                 <!-- Schedule will be populated by JavaScript -->
@@ -373,8 +445,8 @@
 
           <!-- Payments Tab -->
           <div id="payments" class="tab-content">
-            <div class="bg-white rounded-xl shadow-lg p-6">
-              <h3 class="text-xl font-bold text-gray-800 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+              <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-6">
                 💰 Riwayat Pembayaran
               </h3>
               <div class="overflow-x-auto">
@@ -382,22 +454,22 @@
                   <thead class="bg-gray-50">
                     <tr>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Tanggal
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Jumlah
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Pertemuan
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
                         Status
                       </th>
@@ -416,17 +488,20 @@
 
           <!-- Profile Tab -->
           <div id="profile" class="tab-content">
-            <div class="bg-white rounded-xl shadow-lg p-6">
-              <h3 class="text-xl font-bold text-gray-800 mb-6">
+            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+              <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-6">
                 👤 Profil Saya
               </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700"
                       >Nama Lengkap</label
                     >
-                    <p class="mt-1 text-lg text-gray-900" id="profile-name">
+                    <p
+                      class="mt-1 text-base sm:text-lg text-gray-900"
+                      id="profile-name"
+                    >
                       -
                     </p>
                   </div>
@@ -434,7 +509,10 @@
                     <label class="block text-sm font-medium text-gray-700"
                       >Nomor Telepon</label
                     >
-                    <p class="mt-1 text-lg text-gray-900" id="profile-phone">
+                    <p
+                      class="mt-1 text-base sm:text-lg text-gray-900"
+                      id="profile-phone"
+                    >
                       -
                     </p>
                   </div>
@@ -442,7 +520,10 @@
                     <label class="block text-sm font-medium text-gray-700"
                       >Email</label
                     >
-                    <p class="mt-1 text-lg text-gray-900" id="profile-email">
+                    <p
+                      class="mt-1 text-base sm:text-lg text-gray-900"
+                      id="profile-email"
+                    >
                       -
                     </p>
                   </div>
@@ -452,7 +533,10 @@
                     <label class="block text-sm font-medium text-gray-700"
                       >Asal Sekolah</label
                     >
-                    <p class="mt-1 text-lg text-gray-900" id="profile-school">
+                    <p
+                      class="mt-1 text-base sm:text-lg text-gray-900"
+                      id="profile-school"
+                    >
                       -
                     </p>
                   </div>
@@ -460,7 +544,10 @@
                     <label class="block text-sm font-medium text-gray-700"
                       >Tingkatan</label
                     >
-                    <p class="mt-1 text-lg text-gray-900" id="profile-level">
+                    <p
+                      class="mt-1 text-base sm:text-lg text-gray-900"
+                      id="profile-level"
+                    >
                       -
                     </p>
                   </div>
@@ -469,7 +556,7 @@
                       >Jenis Kelas</label
                     >
                     <p
-                      class="mt-1 text-lg text-gray-900"
+                      class="mt-1 text-base sm:text-lg text-gray-900"
                       id="profile-class-type"
                     >
                       -
@@ -482,6 +569,49 @@
         </div>
       </div>
     </div>
+
+    <!-- Banner Pasang Aplikasi -->
+    <div
+      id="installBanner"
+      class="hidden fixed top-0 left-0 w-full bg-blue-600 text-white px-6 py-4 flex items-center justify-between shadow-md z-50"
+    >
+      <span class="text-sm sm:text-base font-medium">
+        🚀 Pasang aplikasi ini untuk pengalaman lebih baik!
+      </span>
+      <button
+        id="installBtn"
+        class="ml-4 px-4 py-2 bg-white text-blue-600 font-semibold rounded hover:bg-blue-100 transition duration-300"
+      >
+        Pasang Aplikasi
+      </button>
+    </div>
+
+    <!-- Spasi untuk konten agar tidak tertutup banner -->
+    <div class="pt-20"></div>
+
+    <script>
+      let deferredPrompt;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        const installBanner = document.getElementById("installBanner");
+        installBanner.classList.remove("hidden");
+
+        document.getElementById("installBtn").addEventListener("click", () => {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === "accepted") {
+              console.log("Aplikasi dipasang!");
+            }
+            deferredPrompt = null;
+
+            // Sembunyikan banner setelah instalasi
+            installBanner.classList.add("hidden");
+          });
+        });
+      });
+    </script>
 
     <script>
       // --- KONFIGURASI ---
@@ -528,8 +658,8 @@
         e.preventDefault();
         const phoneInput = document.getElementById("phone-input").value.trim();
         const errorP = document.getElementById("access-error");
-        const loginButton = e.target.querySelector("button[type='submit']"); // 1. Dapatkan tombol
-        const originalButtonHTML = loginButton.innerHTML; // 2. Simpan konten asli tombol
+        const loginButton = e.target.querySelector("button[type='submit']");
+        const originalButtonHTML = loginButton.innerHTML;
 
         errorP.textContent = "";
 
@@ -538,7 +668,6 @@
           return;
         }
 
-        // --- 3. Tambahkan animasi dan nonaktifkan tombol ---
         loginButton.disabled = true;
         loginButton.innerHTML = `
           <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -547,11 +676,9 @@
           </svg>
           <span>Memproses...</span>
         `;
-        // Overlay loading yang sudah ada tetap ditampilkan
         document.getElementById("loading-overlay").style.display = "flex";
 
         try {
-          // Solusi untuk error sebelumnya
           const response = await fetch(
             `${SPREADSHEET_WEB_APP_URL}?action=getAllData`
           );
@@ -566,7 +693,6 @@
 
           const normalizedPhone = phoneInput.replace(/[\s\-\(\)]/g, "");
           const student = students.find((s) => {
-            // Pastikan s.phone ada dan konversi ke string sebelum .replace()
             if (!s.phone) return false;
             const studentPhone = String(s.phone).replace(/[\s\-\(\)]/g, "");
             return studentPhone === normalizedPhone;
@@ -574,7 +700,7 @@
 
           if (!student) {
             errorP.textContent = "Nomor telepon tidak ditemukan dalam sistem.";
-            throw new Error("Student not found"); // Hentikan proses jika siswa tidak ditemukan
+            throw new Error("Student not found");
           }
 
           if (student.activeBatch && typeof student.activeBatch === "string") {
@@ -599,7 +725,6 @@
               "Terjadi kesalahan saat memuat data. Coba lagi.";
           }
         } finally {
-          // --- 4. Kembalikan tombol ke keadaan semula ---
           loginButton.disabled = false;
           loginButton.innerHTML = originalButtonHTML;
           document.getElementById("loading-overlay").style.display = "none";
@@ -708,7 +833,7 @@
           const isToday = index === today;
 
           const dayCard = document.createElement("div");
-          dayCard.className = `p-4 rounded-lg border-2 text-center ${
+          dayCard.className = `p-3 sm:p-4 rounded-lg border-2 text-center ${
             hasClass
               ? isToday
                 ? "bg-indigo-100 border-indigo-500 text-indigo-800"
@@ -717,8 +842,8 @@
           }`;
 
           dayCard.innerHTML = `
-            <div class="font-semibold mb-2">${dayName}</div>
-            <div class="text-sm">
+            <div class="font-semibold mb-2 text-sm sm:text-base">${dayName}</div>
+            <div class="text-xs sm:text-sm">
               ${hasClass ? "📚 Ada Kelas" : "🚫 Libur"}
               ${
                 isToday
@@ -739,7 +864,7 @@
         if (studentPayments.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+              <td colspan="4" class="px-3 sm:px-6 py-4 text-center text-gray-500 text-sm">
                 Belum ada riwayat pembayaran
               </td>
             </tr>
@@ -770,10 +895,10 @@
 
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paymentDate}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${amount}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${payment.totalMeetings} pertemuan</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">${paymentDate}</td>
+            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">${amount}</td>
+            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">${payment.totalMeetings} pertemuan</td>
+            <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
               <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
                 ${statusText}
               </span>
@@ -975,12 +1100,11 @@
 
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/service-worker.js")
-          .then(reg => console.log("Service Worker registered:", reg.scope))
-          .catch(err => console.error("Service Worker failed:", err));
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then((reg) => console.log("Service Worker registered:", reg.scope))
+          .catch((err) => console.error("Service Worker failed:", err));
       }
     </script>
-
   </body>
 </html>
-
