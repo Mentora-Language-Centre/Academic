@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi QR</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat library QR Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- Memuat library Tone.js untuk suara -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    
+    <style>
+        /* Sembunyikan video asli dari html5-qrcode, kita hanya perlu viewfindernya */
+        #qr-reader video {
+            display: none;
+        }
+        /* Animasi putar untuk ikon loading */
+        .loader {
+            border-top-color: #3498db;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <div class="container mx-auto max-w-lg p-6 min-h-screen flex flex-col justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-8">
+            
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">
+                Sistem Absensi QR
+            </h1>
+            
+            <!-- Kontainer untuk QR Scanner -->
+            <div id="qr-reader-container" class="mb-6">
+                <div id="qr-reader" class="w-full h-64 md:h-80 bg-gray-200 rounded-lg overflow-hidden border-4 border-dashed border-gray-300 flex items-center justify-center">
+                    <p id="qr-placeholder-text" class="text-gray-500 text-center p-4">Klik tombol di bawah untuk memulai kamera.</p>
+                </div>
+            </div>
+
+            <!-- Tombol Mulai Scan -->
+            <button id="start-scan-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 ease-in-out shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Mulai Pindai QR
+            </button>
+            
+            <!-- Status Message -->
+            <p id="status-message" class="text-center text-gray-600 mt-4 h-6"></p>
+
+        </div>
+    </div>
+
+    <!-- Modal untuk Loading -->
+    <div id="loading-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+    </div>
+
+    <!-- Modal untuk Sukses -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Absensi Berhasil!</h3>
+            <p id="success-message" class="text-gray-600 text-lg"></p>
+            <p id="success-meetings" class="text-gray-500 text-sm mt-2"></p>
+            <button onclick="hideModal('success-modal')" class="mt-6 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal untuk Gagal -->
+    <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+                <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Absensi Gagal</h3>
+            <p id="error-message" class="text-gray-600 text-lg"></p>
+            <button onclick="hideModal('error-modal')" class="mt-6 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI ---
+        // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxtZ8xicc0BA4fPFdsJtKGVndHK7pMahCfg9XaCO-quWMn44Q2k0CjraG_1gTzsN1OYhQ/exec"; 
+        // Pastikan URL ini adalah URL "exec", bukan "dev"
+        // --- AKHIR KONFIGURASI ---
+
+        // Referensi Elemen DOM
+        const startScanBtn = document.getElementById('start-scan-btn');
+        const statusMessage = document.getElementById('status-message');
+        const qrPlaceholderText = document.getElementById('qr-placeholder-text');
+
+        // Variabel state
+        let html5QrCode = null;
+        let isScanning = false;
+        let isProcessing = false; // Mencegah scan ganda saat fetch
+
+        // Inisialisasi Audio
+        const successSynth = new Tone.Synth().toDestination();
+        const errorSynth = new Tone.Synth().toDestination();
+
+        function playSuccessSound() {
+            // Suara "ding-dong" naik
+            successSynth.triggerAttackRelease("C5", "0.1", Tone.now());
+            successSynth.triggerAttackRelease("G5", "0.2", Tone.now() + 0.15);
+        }
+
+        function playErrorSound() {
+            // Suara "buzz" gagal
+            errorSynth.triggerAttackRelease("C3", "0.4", Tone.now());
+        }
+
+        // --- Fungsi Modal ---
+        function showModal(modalId, message = '', details = '') {
+            const modal = document.getElementById(modalId);
+            if (modalId === 'success-modal') {
+                document.getElementById('success-message').textContent = message;
+                document.getElementById('success-meetings').textContent = details;
+            } else if (modalId === 'error-modal') {
+                document.getElementById('error-message').textContent = message;
+            } else if (modalId === 'loading-modal') {
+                // tidak ada pesan, hanya spinner
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId !== 'loading-modal') {
+                // Izinkan scan berikutnya setelah modal ditutup
+                isProcessing = false;
+                statusMessage.textContent = 'Arahkan QR ke kamera...';
+            }
+        }
+
+        // --- Fungsi Scan ---
+        function onScanSuccess(decodedText, decodedResult) {
+            if (isProcessing) return; // Jangan proses jika sedang memproses
+            
+            isProcessing = true; // Tandai sebagai sedang memproses
+            statusMessage.textContent = 'Memproses data...';
+            showModal('loading-modal');
+
+            // Panggil fungsi untuk memproses absensi
+            markAttendance(decodedText);
+        }
+
+        function onScanFailure(error) {
+            // Error ini akan sering terjadi (kamera tidak menemukan QR), jadi abaikan saja
+            // statusMessage.textContent = 'Tidak ada QR terdeteksi...';
+        }
+
+        async function markAttendance(studentId) {
+            if (GAS_WEB_APP_URL === "URL_WEB_APP_ANDA_DISINI") {
+                showModal('error-modal', 'URL Web App belum diatur di file HTML.');
+                hideModal('loading-modal');
+                playErrorSound();
+                return;
+            }
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL + "?action=markAttendance", {
+                    method: 'POST',
+                    mode: 'cors', // Penting untuk GAS
+                    headers: {
+                        'Content-Type': 'text/plain', // GAS seringkali lebih suka text/plain untuk postData
+                    },
+                    body: JSON.stringify({ studentId: studentId }) // Kirim ID sebagai JSON string
+                });
+
+                const result = await response.json();
+                hideModal('loading-modal');
+
+                if (result.status === 'success') {
+                    // Sukses
+                    playSuccessSound();
+                    const welcomeMsg = `Selamat datang, ${result.studentName}!`;
+                    const meetingsMsg = `Sisa pertemuan: ${result.meetingsLeft} / ${result.totalMeetings}`;
+                    showModal('success-modal', welcomeMsg, meetingsMsg);
+                } else {
+                    // Gagal (dari backend)
+                    playErrorSound();
+                    showModal('error-modal', result.message || 'Terjadi kesalahan');
+                }
+
+            } catch (error) {
+                // Gagal (network error)
+                hideModal('loading-modal');
+                playErrorSound();
+                showModal('error-modal', 'Gagal terhubung ke server. Periksa koneksi Anda.');
+                console.error('Error fetching:', error);
+            }
+        }
+
+        // Event listener untuk tombol Start Scan
+        startScanBtn.addEventListener('click', async () => {
+            // Minta izin audio (diperlukan di beberapa browser)
+            await Tone.start();
+            
+            if (!isScanning) {
+                // Mulai scan
+                try {
+                    // Inisialisasi scanner
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                    
+                    await html5QrCode.start(
+                        { facingMode: "environment" }, // Gunakan kamera belakang
+                        {
+                            fps: 10, // Frame per second
+                            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                                const boxSize = Math.floor(minEdge * 0.75); // Ukuran box 75%
+                                return { width: boxSize, height: boxSize };
+                            }
+                        },
+                        onScanSuccess, // Callback sukses
+                        onScanFailure  // Callback gagal
+                    );
+
+                    // Update UI
+                    isScanning = true;
+                    startScanBtn.textContent = 'Hentikan Pindai';
+                    startScanBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    startScanBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    qrPlaceholderText.textContent = ''; // Hilangkan teks placeholder
+                    statusMessage.textContent = 'Arahkan QR ke kamera...';
+                    
+                } catch (err) {
+                    console.error("Gagal memulai scanner:", err);
+                    statusMessage.textContent = 'Gagal mengakses kamera.';
+                    showModal('error-modal', 'Gagal mengakses kamera. Pastikan Anda memberi izin.');
+                }
+            } else {
+                // Hentikan scan
+                try {
+                    await html5QrCode.stop();
+                    
+                    // Update UI
+                    isScanning = false;
+                    isProcessing = false; // Reset status proses
+                    startScanBtn.textContent = 'Mulai Pindai QR';
+                    startScanBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    startScanBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    document.getElementById('qr-reader').innerHTML = ''; // Hapus canvas/video
+                    qrPlaceholderText.textContent = 'Kamera dimatikan. Klik untuk memulai lagi.';
+                    statusMessage.textContent = '';
+                    
+                } catch (err) {
+                    console.error("Gagal menghentikan scanner:", err);
+                    statusMessage.textContent = 'Gagal menghentikan kamera.';
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
