@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akses Dokumen Kurikulum</title>
+    
+    <!-- PDF.js CDN untuk merender PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    
+    <style>
+        /* =========================================
+           CSS INTERNAL - DESAIN UI MODERN & BERSIH
+           ========================================= */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- LOGIN SECTION --- */
+        #login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* --- VIEWER SECTION --- */
+        #viewer-container {
+            display: none; /* Disembunyikan secara default */
+            width: 100%;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            background-color: #525659; /* Warna background gelap khas PDF viewer */
+            padding: 20px 0;
+        }
+
+        .viewer-header {
+            width: 100%;
+            background-color: #323639;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .logout-btn {
+            background-color: transparent;
+            color: #f3f4f6;
+            border: 1px solid #f3f4f6;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        #pdf-render-area {
+            margin-top: 60px; /* Spacer untuk fixed header */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .pdf-page-canvas {
+            max-width: 95%; /* Agar responsif di layar kecil */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background-color: white; /* Fallback jika PDF transparan */
+        }
+        
+        #loading-indicator {
+            color: white;
+            margin-top: 100px;
+            font-size: 1.2rem;
+            display: none;
+        }
+        
+        /* Disable text selection global untuk viewer */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
+</head>
+<body class="no-select">
+
+    <!-- BAGIAN LOGIN -->
+    <div id="login-container">
+        <div class="login-card">
+            <h2>Akses Dokumen</h2>
+            <p>Silakan masukkan email Anda untuk melihat Kurikulum.</p>
+            
+            <div class="input-group">
+                <input type="email" id="email-input" placeholder="contoh: guru@email.com" required>
+            </div>
+            <button class="btn" id="login-btn" onclick="prosesLogin()">Akses Dokumen</button>
+            <div id="error-msg" class="error-message">Email tidak terdaftar atau akses ditolak.</div>
+        </div>
+    </div>
+
+    <!-- BAGIAN VIEWER PDF -->
+    <div id="viewer-container">
+        <div class="viewer-header">
+            <h3>Dokumen Kurikulum</h3>
+            <button class="logout-btn" onclick="prosesLogout()">Keluar</button>
+        </div>
+        <div id="loading-indicator">Memuat dokumen...</div>
+        <div id="pdf-render-area">
+            <!-- Canvas halaman PDF akan dirender di sini oleh JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        /* =========================================
+           JAVASCRIPT - LOGIKA APLIKASI & PROTEKSI
+           ========================================= */
+
+        // Konfigurasi PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        const URL_PDF = 'kurikulum.pdf'; 
+        const URL_JSON = 'emails.json';
+
+        // 1. Inisialisasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            cekStatusLogin();
+        });
+
+        // 2. Fungsi Cek Status Login dari SessionStorage
+        function cekStatusLogin() {
+            const userEmail = sessionStorage.getItem('loggedInEmail');
+            if (userEmail) {
+                tampilkanViewer();
+                muatPDF();
+            } else {
+                tampilkanLogin();
+            }
+        }
+
+        // 3. Fungsi Proses Login
+        async function prosesLogin() {
+            const emailInput = document.getElementById('email-input').value.trim();
+            const errorMsg = document.getElementById('error-msg');
+            const btn = document.getElementById('login-btn');
+
+            if (!emailInput) {
+                errorMsg.innerText = "Harap masukkan email.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Efek loading tombol
+                btn.innerText = "Memeriksa...";
+                btn.disabled = true;
+
+                // Mengambil data dari emails.json
+                const response = await fetch(URL_JSON);
+                if (!response.ok) throw new Error("Gagal mengambil data email");
+                
+                const data = await response.json();
+                
+                // Memeriksa apakah email ada di array allowedEmails
+                if (data.allowedEmails.includes(emailInput)) {
+                    // Login Sukses
+                    sessionStorage.setItem('loggedInEmail', emailInput);
+                    errorMsg.style.display = 'none';
+                    tampilkanViewer();
+                    muatPDF();
+                } else {
+                    // Login Gagal
+                    errorMsg.innerText = "Email tidak memiliki akses.";
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                errorMsg.innerText = "Terjadi kesalahan sistem. Pastikan berjalan di Localhost.";
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.innerText = "Akses Dokumen";
+                btn.disabled = false;
+            }
+        }
+
+        // 4. Fungsi Logout
+        function prosesLogout() {
+            sessionStorage.removeItem('loggedInEmail');
+            document.getElementById('pdf-render-area').innerHTML = ''; // Bersihkan canvas
+            tampilkanLogin();
+        }
+
+        // 5. Pengaturan Tampilan UI
+        function tampilkanViewer() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('viewer-container').style.display = 'flex';
+        }
+
+        function tampilkanLogin() {
+            document.getElementById('login-container').style.display = 'flex';
+            document.getElementById('viewer-container').style.display = 'none';
+            document.getElementById('email-input').value = '';
+        }
+
+        // 6. Fungsi Utama Memuat & Render PDF (Canvas Scroll)
+        function muatPDF() {
+            const renderArea = document.getElementById('pdf-render-area');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            
+            if (renderArea.innerHTML !== '') return; // Cegah render ulang jika sudah ada
+
+            loadingIndicator.style.display = 'block';
+
+            const loadingTask = pdfjsLib.getDocument(URL_PDF);
+            
+            loadingTask.promise.then(pdf => {
+                loadingIndicator.style.display = 'none';
+                
+                // Looping untuk merender semua halaman agar bisa di-scroll
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    
+                    // Buat elemen canvas untuk setiap halaman
+                    const canvas = document.createElement('canvas');
+                    canvas.id = `page-${pageNum}`;
+                    canvas.className = 'pdf-page-canvas';
+                    renderArea.appendChild(canvas);
+
+                    // Render spesifik halaman ke canvas yang baru dibuat
+                    pdf.getPage(pageNum).then(page => {
+                        const targetCanvas = document.getElementById(`page-${pageNum}`);
+                        const context = targetCanvas.getContext('2d');
+                        
+                        // Set skala resolusi (1.5 untuk kualitas baca yang baik)
+                        const scale = 1.5; 
+                        const viewport = page.getViewport({ scale: scale });
+                        
+                        targetCanvas.height = viewport.height;
+                        targetCanvas.width = viewport.width;
+
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        
+                        page.render(renderContext);
+                    });
+                }
+            }).catch(error => {
+                console.error('Error loading PDF:', error);
+                loadingIndicator.innerText = "Gagal memuat PDF. Pastikan file kurikulum.pdf ada.";
+            });
+        }
+
+        /* =========================================
+           PROTEKSI DASAR (Frontend Only)
+           ========================================= */
+
+        // 1. Disable Klik Kanan
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. Blokir Shortcut Keyboard (Save, Print, View Source, Inspect Element)
+        document.addEventListener('keydown', function(e) {
+            // F12 (DevTools)
+            if (e.key === 'F12') {
+                e.preventDefault();
+            }
+            
+            // Cek jika tombol CTRL/CMD sedang ditekan
+            if (e.ctrlKey || e.metaKey) {
+                const key = e.key.toLowerCase();
+                
+                // CTRL+S (Save), CTRL+P (Print), CTRL+U (View Source)
+                if (key === 's' || key === 'p' || key === 'u') {
+                    e.preventDefault();
+                }
+                
+                // CTRL+SHIFT+I (DevTools), CTRL+SHIFT+J (Console), CTRL+SHIFT+C (Element)
+                if (e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
